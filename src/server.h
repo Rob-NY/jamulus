@@ -30,6 +30,11 @@
 #include <QHostAddress>
 #include <QFileInfo>
 #include <QtConcurrent>
+
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonDocument>
+
 #include <algorithm>
 #ifdef USE_OPUS_SHARED_LIB
 #    include "opus/opus_custom.h"
@@ -159,6 +164,7 @@ public:
               const quint16      iQosNumber,
               const QString&     strHTMLStatusFileName,
               const QString&     strDirectoryServer,
+              const QString&     strNotifyServer,
               const QString&     strServerListFileName,
               const QString&     strServerInfo,
               const QString&     strServerListFilter,
@@ -272,7 +278,10 @@ protected:
 
     virtual void customEvent ( QEvent* pEvent );
 
+
     void CreateAndSendRecorderStateForAllConChannels();
+    void BuildServerStatusJson( QString& strServerStatus );
+
 
     // if server mode is normal or double system frame size
     bool bUseDoubleSystemFrameSize;
@@ -346,6 +355,11 @@ protected:
     // HTML file server status
     bool    bWriteStatusHTMLFile;
     QString strServerHTMLFileListName;
+
+    // Notify Server
+    bool    bNotifyServer;
+    CHostAddress addrNotifyServer;
+    QString strNotifyServerAddr;
 
     CHighPrecisionTimer HighPrecisionTimer;
 
@@ -427,6 +441,8 @@ public slots:
     void OnCLReqVersionAndOS ( CHostAddress InetAddr ) { ConnLessProtocol.CreateCLVersionAndOSMes ( InetAddr ); }
 
     void OnCLReqConnClientsList ( CHostAddress InetAddr ) { ConnLessProtocol.CreateCLConnClientsListMes ( InetAddr, CreateChannelList() ); }
+
+    void OnCLReqServerStatus ( CHostAddress InetAddr );
 
     void OnCLRegisterServerReceived ( CHostAddress InetAddr, CHostAddress LInetAddr, CServerCoreInfo ServerInfo )
     {
