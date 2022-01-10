@@ -219,6 +219,7 @@ CServer::CServer ( const int          iNewMaxNumChan,
                    const quint16      iQosNumber,
                    const QString&     strHTMLStatusFileName,
                    const QString&     strDirectoryServer,
+                   const QString&     strNotifyServer,
                    const QString&     strServerListFileName,
                    const QString&     strServerInfo,
                    const QString&     strServerListFilter,
@@ -241,6 +242,8 @@ CServer::CServer ( const int          iNewMaxNumChan,
     iFrameCount ( 0 ),
     bWriteStatusHTMLFile ( false ),
     strServerHTMLFileListName ( strHTMLStatusFileName ),
+    bNotifyServer( false ),
+    strNotifyServerAddr( strNotifyServer ),
     HighPrecisionTimer ( bNUseDoubleSystemFrameSize ),
     ServerListManager ( iPortNumber,
                         strDirectoryServer,
@@ -386,6 +389,25 @@ CServer::CServer ( const int          iNewMaxNumChan,
         WriteHTMLChannelList();
     }
 
+
+    // Notify Server Setup
+    if( !strNotifyServerAddr.isEmpty() )
+    {
+
+        // No IPv6 here
+        if( NetworkUtil::ParseNetworkAddress( strNotifyServerAddr, addrNotifyServer, false ) )
+        {
+            qInfo() << "-Server notifications sent to:" << addrNotifyServer.toString();
+            bNotifyServer = true;
+            OnCLReqServerStatus( addrNotifyServer );
+        }
+        else
+        {
+            qInfo() << "- ** Could not parse notify server **";
+            bNotifyServer = false;  // default is already false - here just for clarity...
+        }
+    }
+
     // manage welcome message: if the welcome message is a valid link to a local
     // file, the content of that file is used as the welcome message (#361)
     SetWelcomeMessage ( strNewWelcomeMessage ); // first use given text, may be overwritten
@@ -464,6 +486,8 @@ CServer::CServer ( const int          iNewMaxNumChan,
     QObject::connect ( &ConnLessProtocol, &CProtocol::CLVersionAndOSReceived, this, &CServer::CLVersionAndOSReceived );
 
     QObject::connect ( &ConnLessProtocol, &CProtocol::CLReqConnClientsList, this, &CServer::OnCLReqConnClientsList );
+
+    QObject::connect ( &ConnLessProtocol, &CProtocol::CLReqServerStatus, this, &CServer::OnCLReqServerStatus );
 
     QObject::connect ( &ServerListManager, &CServerListManager::SvrRegStatusChanged, this, &CServer::SvrRegStatusChanged );
 
@@ -561,6 +585,29 @@ void CServer::SendProtMessage ( int iChID, CVector<uint8_t> vecMessage )
     // send it through the network
     Socket.SendPacket ( vecMessage, vecChannels[iChID].GetAddress() );
 }
+
+void CServer::OnCLReqServerStatus ( CHostAddress InetAddr )
+{
+    QString strServerStatus;
+
+    // If not enabled, bail
+    if( ! bNotifyServer )
+        return;
+
+    // Only process if the InetAddr is the same as that
+    // specified in the command line argument.
+
+    if( !( InetAddr == addrNotifyServer) )
+    {
+        qInfo() << "** Denied server status message request from" << InetAddr.toString() << "only allowed to"<<addrNotifyServer.toString();
+        return;
+    }
+
+    BuildServerStatusJson(strServerStatus);
+
+    ConnLessProtocol.CreateCLServerStatusMes ( InetAddr, strServerStatus );
+}
+
 
 void CServer::OnNewConnection ( int iChID, int iTotChans, CHostAddress RecHostAddr )
 {
@@ -1403,6 +1450,9 @@ void CServer::CreateAndSendChanListForAllConChannels()
         }
     }
 
+    // Send Server Status to the designated host, if specified.
+    OnCLReqServerStatus( addrNotifyServer );
+
     // create status HTML file if enabled
     if ( bWriteStatusHTMLFile )
     {
@@ -1457,6 +1507,9 @@ void CServer::CreateAndSendRecorderStateForAllConChannels()
             vecChannels[i].CreateRecorderStateMes ( eRecorderState );
         }
     }
+
+    OnCLReqServerStatus( addrNotifyServer );
+
 }
 
 void CServer::CreateOtherMuteStateChanged ( const int iCurChanID, const int iOtherChanID, const bool bIsMuted )
@@ -1702,6 +1755,66 @@ void CServer::SetWelcomeMessage ( const QString& strNWelcMess )
     // restrict welcome message to maximum allowed length
     strWelcomeMessage = strWelcomeMessage.left ( MAX_LEN_CHAT_TEXT );
 }
+
+/**
+* Build a server status json string that can be used to either
+* write to a disk-based status file, or sent via CL message.
+*/
+
+void CServer::BuildServerStatusJson( QString& strServerStatus )
+{
+
+    CHostAddress InetAddr;
+    CChannelCoreInfo ci;
+
+
+    ERecorderState eRecorderState = JamController.GetRecorderState();
+
+    int ccount = GetNumberOfConnectedClients();
+
+    QJsonObject jobject;
+    QJsonArray  jclients;
+
+
+    jobject["cc"] = ccount;
+    jobject["rs"] = eRecorderState;
+    jobject["ts"] = QDateTime::currentSecsSinceEpoch();
+    jobject["svnm"] = ServerListManager.GetServerName();
+    jobject["svct"] = ServerListManager.GetServerCity();
+    jobject["svcn"] = ServerListManager.GetServerCountry();
+
+    if ( ccount > 0 )
+    {
+        // write entry for each connected client
+        for ( int i = 0; i < iMaxNumChannels; i++ )
+        {
+            if ( vecChannels[i].IsConnected() )
+            {
+                InetAddr = vecChannels[i].GetAddress();
+                ci = vecChannels[i].GetChanInfo();
+
+                QJsonObject temp;
+                temp["ip"] = InetAddr.toString();
+                temp["in"] = ci.iInstrument;
+                temp["sk"] = ci.eSkillLevel;
+                temp["cn"] = ci.eCountry;
+                temp["ct"] = ci.strCity;
+                temp["nm"] = vecChannels[i].GetName();
+
+                jclients.push_back( QJsonValue(temp) );
+
+            }
+        }
+
+    }
+
+    jobject["cl"] = jclients;
+
+    QJsonDocument jdoc(jobject);
+    strServerStatus = jdoc.toJson(QJsonDocument::Compact);
+
+}
+
 
 void CServer::WriteHTMLChannelList()
 {
