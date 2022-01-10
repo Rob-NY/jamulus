@@ -100,6 +100,7 @@ int main ( int argc, char** argv )
     QString      strServerListFilter         = "";
     QString      strWelcomeMessage           = "";
     QString      strClientName               = "";
+    QString      strNotifyServer             = "";
 
 #if !defined( HEADLESS ) && defined( _WIN32 )
     if ( AttachConsole ( ATTACH_PARENT_PROCESS ) )
@@ -459,6 +460,18 @@ int main ( int argc, char** argv )
             qInfo() << "- mute me in my personal mix";
             CommandLineOptions << "--mutemyown";
             ClientOnlyOptions << "--mutemyown";
+            continue;
+        }
+
+
+
+        // Notification Server  xxx.xxx.xxx.xxx:ppp-----------------------------
+        if ( GetStringArgument ( argc, argv, i, "--notifyserver", "--notifyserver", strArgument ) )
+        {
+
+            strNotifyServer = strArgument;
+            qInfo() << qUtf8Printable ( QString ( "- notify server: %1" ).arg ( strNotifyServer ) );
+            CommandLineOptions << "--notifyserver";
             continue;
         }
 
@@ -852,6 +865,7 @@ int main ( int argc, char** argv )
                              iPortNumber,
                              iQosNumber,
                              strHTMLStatusFileName,
+                             strNotifyServer,
                              strCentralServer,
                              strServerListFileName,
                              strServerInfo,
@@ -985,6 +999,7 @@ QString UsageArguments ( char** argv )
            "  -w, --welcomemessage  welcome message to display on connect\n"
            "                        (string or filename)\n"
            "  -z, --startminimized  start minimizied\n"
+           "      --notifyserver    specify server to receive UDP notifications IP:PORT\n"
            "\n"
            "Client only:\n"
            "  -c, --connect         connect to given server address on startup\n"
