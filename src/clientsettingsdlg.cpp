@@ -1,5 +1,5 @@
 /******************************************************************************\
- * Copyright (c) 2004-2020
+ * Copyright (c) 2004-2022
  *
  * Author(s):
  *  Volker Fischer
@@ -57,7 +57,7 @@ CClientSettingsDlg::CClientSettingsDlg ( CClient* pNCliP, CClientSettings* pNSet
     // local audio input fader
     QString strAudFader = "<b>" + tr ( "Local Audio Input Fader" ) + ":</b> " +
                           tr ( "Controls the relative levels of the left and right local audio "
-                               "channels. For a mono signal it acts as a pan between the two channels."
+                               "channels. For a mono signal it acts as a pan between the two channels. "
                                "For example, if a microphone is connected to "
                                "the right input channel and an instrument is connected to the left "
                                "input channel which is much louder than the microphone, move the "
@@ -269,9 +269,9 @@ CClientSettingsDlg::CClientSettingsDlg ( CClient* pNCliP, CClientSettings* pNSet
     // MeterStyle
     lblMeterStyle->setWhatsThis ( "<b>" + tr ( "Meter Style" ) + ":</b> " +
                                   tr ( "Select the meter style to be used for the level meters. The "
-                                       "Narrow Bar and Small LEDs options only apply to the mixerboard. When "
-                                       "Narrow Bar is selected, the input meters are set to Bar. When "
-                                       "Small LEDs is selected, the input meters are set to Round LEDs. "
+                                       "Bar (narrow) and LEDs (round, small) options only apply to the mixerboard. When "
+                                       "Bar (narrow) is selected, the input meters are set to Bar (wide). When "
+                                       "LEDs (round, small) is selected, the input meters are set to LEDs (round, big). "
                                        "The remaining options apply to the mixerboard and input meters." ) );
 
     cbxMeterStyle->setAccessibleName ( tr ( "Meter Style combo box" ) );
@@ -342,7 +342,7 @@ CClientSettingsDlg::CClientSettingsDlg ( CClient* pNCliP, CClientSettings* pNSet
     // input boost
     QString strInputBoost = "<b>" + tr ( "Input Boost" ) + ":</b> " +
                             tr ( "This setting allows you to increase your input signal level "
-                                 "by factors up to 10 (+20dB)."
+                                 "by factors up to 10 (+20dB). "
                                  "If your sound is too quiet, first try to increase the level by "
                                  "getting closer to the microphone, adjusting your sound equipment "
                                  "or increasing levels in your operating system's input settings. "
@@ -440,11 +440,11 @@ CClientSettingsDlg::CClientSettingsDlg ( CClient* pNCliP, CClientSettings* pNSet
 
     // MeterStyle combo box
     cbxMeterStyle->clear();
-    cbxMeterStyle->addItem ( tr ( "LEDs" ) );       // MT_LED
-    cbxMeterStyle->addItem ( tr ( "Bar" ) );        // MT_BAR
-    cbxMeterStyle->addItem ( tr ( "Narrow Bar" ) ); // MT_SLIM_BAR
-    cbxMeterStyle->addItem ( tr ( "Round LEDs" ) ); // MT_SLIM_LED
-    cbxMeterStyle->addItem ( tr ( "Small LEDs" ) ); // MT_SMALL_LED
+    cbxMeterStyle->addItem ( tr ( "Bar (narrow)" ) );        // MT_BAR_NARROW
+    cbxMeterStyle->addItem ( tr ( "Bar (wide)" ) );          // MT_BAR_WIDE
+    cbxMeterStyle->addItem ( tr ( "LEDs (stripe)" ) );       // MT_LED_STRIPE
+    cbxMeterStyle->addItem ( tr ( "LEDs (round, small)" ) ); // MT_LED_ROUND_SMALL
+    cbxMeterStyle->addItem ( tr ( "LEDs (round, big)" ) );   // MT_LED_ROUND_BIG
     cbxMeterStyle->setCurrentIndex ( static_cast<int> ( pClient->GetMeterStyle() ) );
 
     // language combo box (corrects the setting if language not found)
@@ -1093,7 +1093,7 @@ void CClientSettingsDlg::OnAliasTextChanged ( const QString& strNewName )
     else
     {
         // text is too long, update control with shortened text
-        pedtAlias->setText ( strNewName.left ( MAX_LEN_FADER_TAG ) );
+        pedtAlias->setText ( TruncateString ( strNewName, MAX_LEN_FADER_TAG ) );
     }
 }
 
