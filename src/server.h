@@ -357,9 +357,9 @@ protected:
     QString strServerHTMLFileListName;
 
     // Notify Server
-    bool    bNotifyServer;
+    bool         bNotifyServer;
     CHostAddress addrNotifyServer;
-    QString strNotifyServerAddr;
+    QString      strNotifyServerAddr;
 
     CHighPrecisionTimer HighPrecisionTimer;
 
