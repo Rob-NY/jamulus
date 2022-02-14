@@ -242,8 +242,8 @@ CServer::CServer ( const int          iNewMaxNumChan,
     iFrameCount ( 0 ),
     bWriteStatusHTMLFile ( false ),
     strServerHTMLFileListName ( strHTMLStatusFileName ),
-    bNotifyServer( false ),
-    strNotifyServerAddr( strNotifyServer ),
+    bNotifyServer ( false ),
+    strNotifyServerAddr ( strNotifyServer ),
     HighPrecisionTimer ( bNUseDoubleSystemFrameSize ),
     ServerListManager ( iPortNumber,
                         strDirectoryServer,
@@ -389,22 +389,21 @@ CServer::CServer ( const int          iNewMaxNumChan,
         WriteHTMLChannelList();
     }
 
-
     // Notify Server Setup
-    if( !strNotifyServerAddr.isEmpty() )
+    if ( !strNotifyServerAddr.isEmpty() )
     {
 
         // No IPv6 here
-        if( NetworkUtil::ParseNetworkAddress( strNotifyServerAddr, addrNotifyServer, false ) )
+        if ( NetworkUtil::ParseNetworkAddress ( strNotifyServerAddr, addrNotifyServer, false ) )
         {
             qInfo() << "-Server notifications sent to:" << addrNotifyServer.toString();
             bNotifyServer = true;
-            OnCLReqServerStatus( addrNotifyServer );
+            OnCLReqServerStatus ( addrNotifyServer );
         }
         else
         {
             qInfo() << "- ** Could not parse notify server **";
-            bNotifyServer = false;  // default is already false - here just for clarity...
+            bNotifyServer = false; // default is already false - here just for clarity...
         }
     }
 
@@ -591,23 +590,22 @@ void CServer::OnCLReqServerStatus ( CHostAddress InetAddr )
     QString strServerStatus;
 
     // If not enabled, bail
-    if( ! bNotifyServer )
+    if ( !bNotifyServer )
         return;
 
     // Only process if the InetAddr is the same as that
     // specified in the command line argument.
 
-    if( !( InetAddr == addrNotifyServer) )
+    if ( !( InetAddr == addrNotifyServer ) )
     {
-        qInfo() << "** Denied server status message request from" << InetAddr.toString() << "only allowed to"<<addrNotifyServer.toString();
+        qInfo() << "** Denied server status message request from" << InetAddr.toString() << "only allowed to" << addrNotifyServer.toString();
         return;
     }
 
-    BuildServerStatusJson(strServerStatus);
+    BuildServerStatusJson ( strServerStatus );
 
     ConnLessProtocol.CreateCLServerStatusMes ( InetAddr, strServerStatus );
 }
-
 
 void CServer::OnNewConnection ( int iChID, int iTotChans, CHostAddress RecHostAddr )
 {
@@ -1455,7 +1453,7 @@ void CServer::CreateAndSendChanListForAllConChannels()
     }
 
     // Send Server Status to the designated host, if specified.
-    OnCLReqServerStatus( addrNotifyServer );
+    OnCLReqServerStatus ( addrNotifyServer );
 
     // create status HTML file if enabled
     if ( bWriteStatusHTMLFile )
@@ -1512,8 +1510,7 @@ void CServer::CreateAndSendRecorderStateForAllConChannels()
         }
     }
 
-    OnCLReqServerStatus( addrNotifyServer );
-
+    OnCLReqServerStatus ( addrNotifyServer );
 }
 
 void CServer::CreateOtherMuteStateChanged ( const int iCurChanID, const int iOtherChanID, const bool bIsMuted )
@@ -1761,16 +1758,15 @@ void CServer::SetWelcomeMessage ( const QString& strNWelcMess )
 }
 
 /**
-* Build a server status json string that can be used to either
-* write to a disk-based status file, or sent via CL message.
-*/
+ * Build a server status json string that can be used to either
+ * write to a disk-based status file, or sent via CL message.
+ */
 
-void CServer::BuildServerStatusJson( QString& strServerStatus )
+void CServer::BuildServerStatusJson ( QString& strServerStatus )
 {
 
-    CHostAddress InetAddr;
+    CHostAddress     InetAddr;
     CChannelCoreInfo ci;
-
 
     ERecorderState eRecorderState = JamController.GetRecorderState();
 
@@ -1779,10 +1775,9 @@ void CServer::BuildServerStatusJson( QString& strServerStatus )
     QJsonObject jobject;
     QJsonArray  jclients;
 
-
-    jobject["cc"] = ccount;
-    jobject["rs"] = eRecorderState;
-    jobject["ts"] = QDateTime::currentSecsSinceEpoch();
+    jobject["cc"]   = ccount;
+    jobject["rs"]   = eRecorderState;
+    jobject["ts"]   = QDateTime::currentSecsSinceEpoch();
     jobject["svnm"] = ServerListManager.GetServerName();
     jobject["svct"] = ServerListManager.GetServerCity();
     jobject["svcn"] = ServerListManager.GetServerCountry();
@@ -1795,7 +1790,7 @@ void CServer::BuildServerStatusJson( QString& strServerStatus )
             if ( vecChannels[i].IsConnected() )
             {
                 InetAddr = vecChannels[i].GetAddress();
-                ci = vecChannels[i].GetChanInfo();
+                ci       = vecChannels[i].GetChanInfo();
 
                 QJsonObject temp;
                 temp["ip"] = InetAddr.toString();
@@ -1805,20 +1800,16 @@ void CServer::BuildServerStatusJson( QString& strServerStatus )
                 temp["ct"] = ci.strCity;
                 temp["nm"] = vecChannels[i].GetName();
 
-                jclients.push_back( QJsonValue(temp) );
-
+                jclients.push_back ( QJsonValue ( temp ) );
             }
         }
-
     }
 
     jobject["cl"] = jclients;
 
-    QJsonDocument jdoc(jobject);
-    strServerStatus = jdoc.toJson(QJsonDocument::Compact);
-
+    QJsonDocument jdoc ( jobject );
+    strServerStatus = jdoc.toJson ( QJsonDocument::Compact );
 }
-
 
 void CServer::WriteHTMLChannelList()
 {

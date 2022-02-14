@@ -298,8 +298,7 @@ protected:
 
     virtual void customEvent ( QEvent* pEvent );
 
-    void BuildServerStatusJson( QString& strServerStatus );
-
+    void BuildServerStatusJson ( QString& strServerStatus );
 
     // if server mode is normal or double system frame size
     bool bUseDoubleSystemFrameSize;
@@ -375,9 +374,9 @@ protected:
     QString strServerHTMLFileListName;
 
     // Notify Server
-    bool    bNotifyServer;
+    bool         bNotifyServer;
     CHostAddress addrNotifyServer;
-    QString strNotifyServerAddr;
+    QString      strNotifyServerAddr;
 
     CHighPrecisionTimer HighPrecisionTimer;
 

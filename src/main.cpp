@@ -464,8 +464,6 @@ int main ( int argc, char** argv )
             continue;
         }
 
-
-
         // Notification Server  xxx.xxx.xxx.xxx:ppp-----------------------------
         if ( GetStringArgument ( argc, argv, i, "--notifyserver", "--notifyserver", strArgument ) )
         {
