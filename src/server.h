@@ -282,7 +282,6 @@ protected:
     void CreateAndSendRecorderStateForAllConChannels();
     void BuildServerStatusJson( QString& strServerStatus );
 
-
     // if server mode is normal or double system frame size
     bool bUseDoubleSystemFrameSize;
     int  iServerFrameSizeSamples;
