@@ -50,7 +50,7 @@ CServer::CServer ( const int          iNewMaxNumChan,
     iMaxNumChannels ( iNewMaxNumChan ),
     iCurNumChannels ( 0 ),
     Socket ( this, iPortNumber, iQosNumber, strServerBindIP, bNEnableIPv6 ),
-    Logging(),
+    // Logging(),
     iFrameCount ( 0 ),
     bWriteStatusHTMLFile ( false ),
     strServerHTMLFileListName ( strHTMLStatusFileName ),
@@ -188,7 +188,7 @@ CServer::CServer ( const int          iNewMaxNumChan,
     // enable logging (if requested)
     if ( !strLoggingFileName.isEmpty() )
     {
-        Logging.Start ( strLoggingFileName );
+        CServerLogging::getInstance().Start ( strLoggingFileName );
     }
 
     // HTML status file writing
@@ -450,7 +450,7 @@ void CServer::OnNewConnection ( int iChID, int iTotChans, CHostAddress RecHostAd
     DoubleFrameSizeConvBufOut[iChID].Reset();
 
     // logging of new connected channel
-    Logging.AddNewConnection ( RecHostAddr.InetAddr, iTotChans );
+    CServerLogging::getInstance().AddNewConnection ( RecHostAddr.InetAddr, GetNumberOfConnectedClients() );
 }
 
 void CServer::OnServerFull ( CHostAddress RecHostAddr )
@@ -560,7 +560,7 @@ void CServer::Stop()
         HighPrecisionTimer.Stop();
 
         // logging (add "server stopped" logging entry)
-        Logging.AddServerStopped();
+        CServerLogging::getInstance().AddServerStopped();
 
         // emit stopped signal
         emit Stopped();

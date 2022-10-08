@@ -35,8 +35,15 @@
 /* Classes ********************************************************************/
 class CServerLogging
 {
+
+    CServerLogging();
+
 public:
-    CServerLogging() : bDoLogging ( false ), File ( DEFAULT_LOG_FILE_NAME ) {}
+    static CServerLogging& getInstance()
+    {
+        static CServerLogging theInstance;
+        return theInstance;
+    }
 
     virtual ~CServerLogging();
 
@@ -44,6 +51,7 @@ public:
     void AddServerStopped();
 
     void AddNewConnection ( const QHostAddress& ClientInetAddr, const int iNumberOfConnectedClients );
+    void AddChannelInfoChanged ( CChannel* channel );
 
 protected:
     void    operator<< ( const QString& sNewStr );
