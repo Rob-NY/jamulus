@@ -22,9 +22,13 @@
  *
 \******************************************************************************/
 
+#include "channel.h"
 #include "serverlogging.h"
 
 // Server logging --------------------------------------------------------------
+
+CServerLogging::CServerLogging() : bDoLogging ( false ), File ( DEFAULT_LOG_FILE_NAME ) {}
+
 CServerLogging::~CServerLogging()
 {
     // close logging file of open
@@ -45,11 +49,16 @@ void CServerLogging::Start ( const QString& strLoggingFileName )
     }
 }
 
-void CServerLogging::AddNewConnection ( const QHostAddress& ClientInetAddr, const int iNumberOfConnectedClients )
+void CServerLogging::AddNewConnection ( const CHostAddress& ClientInetAddr, const int iNumberOfConnectedClients )
 {
+
+    //
+    // CHostAddress has both IP and port, so we'll display both
+    //
+
     // logging of new connected channel
     const QString strLogStr =
-        CurTimeDatetoLogString() + ", " + ClientInetAddr.toString() + ", connected (" + QString::number ( iNumberOfConnectedClients ) + ")";
+        CurTimeDatetoLogString() + "\tCONNECT\t" + ClientInetAddr.toString() + "\tconnected (" + QString::number ( iNumberOfConnectedClients ) + ")";
 
     qInfo() << qUtf8Printable ( strLogStr ); // on console
     *this << strLogStr;                      // in log file
@@ -57,9 +66,44 @@ void CServerLogging::AddNewConnection ( const QHostAddress& ClientInetAddr, cons
 
 void CServerLogging::AddServerStopped()
 {
-    const QString strLogStr = CurTimeDatetoLogString() + ",, server idling "
-                                                         "-------------------------------------";
 
+    const QString strLogStr = CurTimeDatetoLogString() + "\tIDLE";
+
+    qInfo() << qUtf8Printable ( strLogStr ); // on console
+    *this << strLogStr;                      // in log file
+}
+
+void CServerLogging::AddChannelInfoChanged ( CChannel* channel )
+{
+    // We're not going to print these to the console unless logging is enabled, so we can short-circuit this
+    // method here to save some cycles if logging is not enabled.
+
+    if ( !bDoLogging )
+    {
+        return;
+    }
+
+    //
+    // CHostAddr has both address and port and we will use that here just as in connect.
+    //
+
+    auto address_parts = channel->GetAddress().toString();
+
+    //
+    // Sanitize the channel name to remove tab characters, newlines, etc. for TSV processing
+    //
+
+    QString cName = channel->GetName();
+
+    cName.replace ( QString ( "\n" ), QString ( " " ) );
+    cName.replace ( QString ( "\r" ), QString ( " " ) );
+    cName.replace ( QString ( "\t" ), QString ( " " ) );
+    cName.replace ( QString ( "\\" ), QString ( "\\\\" ) );
+    cName.replace ( QString ( "\"" ), QString ( "\\\"" ) );
+
+    // qDebug() << "Channel input changed " << channel->GetName() << " - " << channel->GetAddress().toString();
+
+    const QString strLogStr = CurTimeDatetoLogString() + "\tCHANNEL\t" + address_parts + "\t" + cName;
     qInfo() << qUtf8Printable ( strLogStr ); // on console
     *this << strLogStr;                      // in log file
 }

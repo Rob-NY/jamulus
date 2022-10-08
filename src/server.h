@@ -271,7 +271,7 @@ protected:
     CHighPrioSocket Socket;
 
     // logging
-    CServerLogging Logging;
+    // CServerLogging Logging;
 
     // channel level update frame interval counter
     int iFrameCount;
