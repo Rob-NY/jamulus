@@ -23,6 +23,7 @@
 \******************************************************************************/
 
 #include "jamrecorder.h"
+#include "rpcserver.h" // For rpc logging
 
 using namespace recorder;
 
@@ -421,6 +422,8 @@ void CJamRecorder::Start()
     }
 
     emit RecordingSessionStarted ( currentSession->SessionDir().path() );
+
+    CRpcLogging::getInstance().rpcOnRecordingStarted ( QString ( currentSession->Name() ) );
 }
 
 /**
@@ -436,6 +439,8 @@ void CJamRecorder::OnEnd()
 
         ReaperProjectFromCurrentSession();
         AudacityLofFromCurrentSession();
+
+        CRpcLogging::getInstance().rpcOnRecordingEnded ( QString ( currentSession->Name() ) );
 
         delete currentSession;
         currentSession = nullptr;

@@ -1022,6 +1022,7 @@ int main ( int argc, char** argv )
             if ( pRpcServer )
             {
                 new CServerRpc ( &Server, pRpcServer, pRpcServer );
+                CRpcLogging::getInstance().setRpcEnabled();
             }
 #endif
 
