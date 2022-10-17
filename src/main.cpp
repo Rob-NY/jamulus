@@ -99,6 +99,7 @@ int main ( int argc, char** argv )
     int          iNumServerChannels          = DEFAULT_USED_NUM_CHANNELS;
     quint16      iPortNumber                 = DEFAULT_PORT_NUMBER;
     int          iJsonRpcPortNumber          = INVALID_PORT;
+    QString      strJsonRpcBindAddress       = DEFAULT_JSON_RPC_LISTEN_ADDRESS;
     quint16      iQosNumber                  = DEFAULT_QOS_NUMBER;
     ELicenceType eLicenceType                = LT_NO_LICENCE;
     QString      strMIDISetup                = "";
@@ -188,6 +189,15 @@ int main ( int argc, char** argv )
             bCustomPortNumberGiven = true;
             qInfo() << qUtf8Printable ( QString ( "- selected port number: %1" ).arg ( iPortNumber ) );
             CommandLineOptions << "--port";
+            continue;
+        }
+
+        // JSON-RPC bind address ------------------------------------------------
+        if ( GetStringArgument ( argc, argv, i, "--jsonrpcbind", "--jsonrpcbind", strArgument ) )
+        {
+            strJsonRpcBindAddress = QString ( strArgument );
+            qInfo() << qUtf8Printable ( QString ( "- JSON-RPC binding to: %1" ).arg ( strJsonRpcBindAddress ) );
+            CommandLineOptions << "--jsonrpcbind";
             continue;
         }
 
@@ -880,7 +890,7 @@ int main ( int argc, char** argv )
         qWarning() << "- JSON-RPC: This interface is experimental and is subject to breaking changes even on patch versions "
                       "(not subject to semantic versioning) during the initial phase.";
 
-        pRpcServer = new CRpcServer ( pApp, iJsonRpcPortNumber, strJsonRpcSecret );
+        pRpcServer = new CRpcServer ( pApp, strJsonRpcBindAddress, iJsonRpcPortNumber, strJsonRpcSecret );
         if ( !pRpcServer->Start() )
         {
             qCritical() << qUtf8Printable ( QString ( "- JSON-RPC: Server failed to start. Exiting." ) );
