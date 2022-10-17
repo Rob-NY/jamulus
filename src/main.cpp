@@ -1082,6 +1082,7 @@ QString UsageArguments ( char** argv )
            "      --jsonrpcsecretfile\n"
            "                        path to a single-line file which contains a freely\n"
            "                        chosen secret to authenticate JSON-RPC users.\n"
+           "      --jsonrpcbind     optional network address to bind RPC server. Defaults to localhost.\n"
            "  -Q, --qos             set the QoS value. Default is 128. Disable with 0\n"
            "                        (see the Jamulus website to enable QoS on Windows)\n"
            "  -t, --notranslation   disable translation (use English language)\n"
