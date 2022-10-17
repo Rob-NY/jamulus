@@ -176,11 +176,16 @@ public:
     CSocket* GetSocketObject() { return Socket.GetSocketObject(); };
 #endif
 
+    bool CreateAndSendPreEscapedChatText ( const int iChannel, const QString& strChatText );
+
+    // Methods formally protected, now public so they can be accessed via RPC
+    virtual void CreateAndSendChatTextForAllConChannels ( const int iCurChanID, const QString& strChatText );
+    int          FindChannel ( const CHostAddress& CheckAddr, const bool bAllowNew = false );
+
 protected:
     // access functions for actual channels
     bool IsConnected ( const int iChanNum ) { return vecChannels[iChanNum].IsConnected(); }
 
-    int                   FindChannel ( const CHostAddress& CheckAddr, const bool bAllowNew = false );
     void                  InitChannel ( const int iNewChanID, const CHostAddress& InetAddr );
     void                  FreeChannel ( const int iCurChanID );
     void                  DumpChannels ( const QString& title );
@@ -188,8 +193,6 @@ protected:
 
     virtual void CreateAndSendChanListForAllConChannels();
     virtual void CreateAndSendChanListForThisChan ( const int iCurChanID );
-
-    virtual void CreateAndSendChatTextForAllConChannels ( const int iCurChanID, const QString& strChatText );
 
     virtual void CreateOtherMuteStateChanged ( const int iCurChanID, const int iOtherChanID, const bool bIsMuted );
 
@@ -319,6 +322,7 @@ signals:
     void Started();
     void Stopped();
     void ClientDisconnected ( const int iChID );
+    void rpcClientDisconnected ( const int iChID, const QString strName, const CHostAddress HostAddress );
     void SvrRegStatusChanged();
     void AudioFrame ( const int              iChID,
                       const QString          stChName,
@@ -333,6 +337,8 @@ signals:
     void StopRecorder();
     void RecordingSessionStarted ( QString sessionDir );
     void EndRecorderThread();
+
+    void rpcChatSent ( const int iCurChanID, const QString chanName, const QString chanAddr, const QString chatStamp, const QString strChatMessage );
 
 public slots:
     void OnTimer();

@@ -27,13 +27,20 @@
 
 #include "server.h"
 #include "rpcserver.h"
+#include "channel.h"
 
 /* Classes ********************************************************************/
 class CServerRpc : public QObject
 {
     Q_OBJECT
+    CRpcServer* ptrRpcServer;
 
 public:
     CServerRpc ( CServer* pServer, CRpcServer* pRpcServer, QObject* parent = nullptr );
+
     static QJsonValue SerializeRegistrationStatus ( ESvrRegStatus eSvrRegStatus );
+
+public slots:
+    void rpcRecordingEnded ( const QString strSession );
+    void rpcRecordingStarted ( const QString strSession );
 };
