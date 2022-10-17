@@ -44,7 +44,7 @@ class CRpcServer : public QObject
     Q_OBJECT
 
 public:
-    CRpcServer ( QObject* parent, QString strBindAddress, int iPort, QString secret );
+    CRpcServer ( QObject* parent, QString strBindIP, int iPort, QString secret );
     virtual ~CRpcServer();
 
     bool Start();
@@ -65,7 +65,7 @@ public:
     static const int iErrChannelNotFound      = 402;
 
 private:
-    QString     strBindAddress;
+    QString     strBindIP;
     int         iPort;
     QString     strSecret;
     QTcpServer* pTransportServer;

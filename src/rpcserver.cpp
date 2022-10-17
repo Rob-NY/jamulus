@@ -26,9 +26,9 @@
 #include "global.h"
 #include "rpcserver.h"
 
-CRpcServer::CRpcServer ( QObject* parent, QString strBindAddress, int iPort, QString strSecret ) :
+CRpcServer::CRpcServer ( QObject* parent, QString strBindIP, int iPort, QString strSecret ) :
     QObject ( parent ),
-    strBindAddress ( strBindAddress ),
+    strBindIP ( strBindIP ),
     iPort ( iPort ),
     strSecret ( strSecret ),
     pTransportServer ( new QTcpServer ( this ) )
@@ -61,7 +61,7 @@ bool CRpcServer::Start()
     {
         return false;
     }
-    if ( pTransportServer->listen ( QHostAddress ( strBindAddress ), iPort ) )
+    if ( pTransportServer->listen ( QHostAddress ( strBindIP ), iPort ) )
     {
         qInfo() << qUtf8Printable ( QString ( "- JSON-RPC: Server started on %1:%2" )
                                         .arg ( pTransportServer->serverAddress().toString() )
