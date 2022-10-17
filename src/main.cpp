@@ -99,7 +99,7 @@ int main ( int argc, char** argv )
     int          iNumServerChannels          = DEFAULT_USED_NUM_CHANNELS;
     quint16      iPortNumber                 = DEFAULT_PORT_NUMBER;
     int          iJsonRpcPortNumber          = INVALID_PORT;
-    QString      strJsonRpcBindAddress       = DEFAULT_JSON_RPC_LISTEN_ADDRESS;
+    QString      strJsonRpcBindIP            = DEFAULT_JSON_RPC_LISTEN_ADDRESS;
     quint16      iQosNumber                  = DEFAULT_QOS_NUMBER;
     ELicenceType eLicenceType                = LT_NO_LICENCE;
     QString      strMIDISetup                = "";
@@ -193,11 +193,11 @@ int main ( int argc, char** argv )
         }
 
         // JSON-RPC bind address ------------------------------------------------
-        if ( GetStringArgument ( argc, argv, i, "--jsonrpcbind", "--jsonrpcbind", strArgument ) )
+        if ( GetStringArgument ( argc, argv, i, "--jsonrpcbindip", "--jsonrpcbindip", strArgument ) )
         {
-            strJsonRpcBindAddress = QString ( strArgument );
-            qInfo() << qUtf8Printable ( QString ( "- JSON-RPC binding to: %1" ).arg ( strJsonRpcBindAddress ) );
-            CommandLineOptions << "--jsonrpcbind";
+            strJsonRpcBindIP = QString ( strArgument );
+            qInfo() << qUtf8Printable ( QString ( "- JSON-RPC binding to: %1" ).arg ( strJsonRpcBindIP ) );
+            CommandLineOptions << "--jsonrpcbindip";
             continue;
         }
 
@@ -890,7 +890,7 @@ int main ( int argc, char** argv )
         qWarning() << "- JSON-RPC: This interface is experimental and is subject to breaking changes even on patch versions "
                       "(not subject to semantic versioning) during the initial phase.";
 
-        pRpcServer = new CRpcServer ( pApp, strJsonRpcBindAddress, iJsonRpcPortNumber, strJsonRpcSecret );
+        pRpcServer = new CRpcServer ( pApp, strJsonRpcBindIP, iJsonRpcPortNumber, strJsonRpcSecret );
         if ( !pRpcServer->Start() )
         {
             qCritical() << qUtf8Printable ( QString ( "- JSON-RPC: Server failed to start. Exiting." ) );
@@ -1083,7 +1083,7 @@ QString UsageArguments ( char** argv )
            "      --jsonrpcsecretfile\n"
            "                        path to a single-line file which contains a freely\n"
            "                        chosen secret to authenticate JSON-RPC users.\n"
-           "      --jsonrpcbind     optional network address to bind RPC server. Defaults to localhost.\n"
+           "      --jsonrpcbindip   optional network address to bind RPC server. Defaults to localhost.\n"
            "  -Q, --qos             set the QoS value. Default is 128. Disable with 0\n"
            "                        (see the Jamulus website to enable QoS on Windows)\n"
            "  -t, --notranslation   disable translation (use English language)\n"
