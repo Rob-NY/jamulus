@@ -259,6 +259,8 @@ CServerRpc::CServerRpc ( CServer* pServer, CRpcServer* pRpcServer, QObject* pare
         CVector<int>              veciNetwFrameSizeFact;
         CVector<CChannelCoreInfo> vecChanInfo;
 
+        int connections = 0;
+
         pServer->GetConCliParam ( vecHostAddresses, vecsName, veciJitBufNumFrames, veciNetwFrameSizeFact, vecChanInfo );
 
         // we assume that all vectors have the same length
@@ -287,11 +289,13 @@ CServerRpc::CServerRpc ( CServer* pServer, CRpcServer* pRpcServer, QObject* pare
                 { "skillLevelName", SkillLevelToString ( vecChanInfo[i].eSkillLevel ) },
             };
             clients.append ( client );
+
+            ++connections;
         }
 
         // create result object
         QJsonObject result{
-            { "connections", pServer->GetNumberOfConnectedClients() },
+            { "connections", connections },
             { "clients", clients },
         };
         response["result"] = result;
