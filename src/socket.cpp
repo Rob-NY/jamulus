@@ -255,6 +255,13 @@ void CSocket::SendPacket ( const CVector<uint8_t>& vecbySendBuf, const CHostAddr
 {
     int status = 0;
 
+#ifndef NO_FIREWALL
+
+    if ( !fwQuery ( HostAddr ) )
+        return;
+
+#endif
+
     uSockAddr UdpSocketAddr;
 
     memset ( &UdpSocketAddr, 0, sizeof ( UdpSocketAddr ) );
@@ -401,6 +408,13 @@ void CSocket::OnDataReceived()
         RecHostAddr.iPort = ntohs ( UdpSocketAddr.sa4.sin_port );
     }
 
+#ifndef NO_FIREWALL
+
+    if ( !fwQuery ( RecHostAddr ) )
+        return;
+
+#endif
+
     // check if this is a protocol message
     int              iRecCounter;
     int              iRecID;
@@ -481,3 +495,97 @@ void CSocket::OnDataReceived()
         }
     }
 }
+
+#ifndef NO_FIREWALL
+
+//
+// Set firewall mode:
+//
+// 0 = Open, block IP's in list
+// 1 = Close, only allow IP's in list
+//
+
+void CSocket::fwSetMode ( int mode )
+{
+    QMutexLocker locker ( &FWMutex );
+    fwMode = mode;
+    qInfo() << "Firewall mode set to: " << mode;
+}
+
+int CSocket::fwGetMode()
+{
+    QMutexLocker locker ( &FWMutex );
+    return fwMode;
+}
+
+void CSocket::fwGetAddresses ( QStringList& ips )
+{
+    QMutexLocker locker ( &FWMutex );
+
+    QHashIterator<QString, QString> i ( fwList );
+    while ( i.hasNext() )
+    {
+        i.next();
+        ips.append ( QString ( i.value() ) );
+    }
+}
+
+void CSocket::fwReset()
+{
+    QMutexLocker locker ( &FWMutex );
+    fwMode      = 0;
+    fwRuleCount = 0;
+    fwList.clear();
+    qInfo() << "Firewall reset";
+}
+
+void CSocket::fwAdd ( QString ip )
+{
+    QMutexLocker locker ( &FWMutex );
+    fwList.insert ( ip, ip );
+    fwRuleCount++;
+    qInfo() << "Added FW address " << ip;
+}
+
+void CSocket::fwRemove ( QString ip )
+{
+    QMutexLocker locker ( &FWMutex );
+    fwRuleCount--;
+    fwList.remove ( ip );
+    qInfo() << "Removed FW address " << ip;
+}
+
+bool CSocket::fwQuery ( CHostAddress RecAddr )
+{
+    QMutexLocker locker ( &FWMutex );
+
+    if ( fwMode == 0 )
+    {
+        if ( fwRuleCount > 0 )
+        {
+            // If IP is in the list on an open FW, block
+            // the IP by simply ignoring the packet
+
+            QString lookup = RecAddr.InetAddr.toString();
+
+            if ( fwList.contains ( lookup ) )
+                return false;
+        }
+    }
+    else
+    {
+        // closed mode
+        if ( fwRuleCount < 1 )
+            return false;
+
+        // If closed mode, IP must be in the list
+
+        QString lookup = RecAddr.InetAddr.toString();
+
+        if ( !fwList.contains ( lookup ) )
+            return false;
+    }
+
+    return true;
+}
+#endif

@@ -1106,6 +1106,11 @@ contains(CONFIG, "nojsonrpc") {
     }
 }
 
+contains(CONFIG, "nofirewall") {
+    message(Socket firewall excluded from build)
+    DEFINES += NO_FIREWALL
+}
+
 # use external OPUS library if requested
 contains(CONFIG, "opus_shared_lib") {
     message(OPUS codec is used from a shared library.)
