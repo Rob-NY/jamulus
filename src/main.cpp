@@ -1018,6 +1018,12 @@ int main ( int argc, char** argv )
             }
 #endif
 
+#ifndef NO_FIREWALL
+            qInfo() << "\n***Socket firewall is ENABLED***\n";
+#else
+            qInfo() << "\n***Socket firewall is DISABLED***\n";
+#endif
+
 #ifndef HEADLESS
             if ( bUseGUI )
             {

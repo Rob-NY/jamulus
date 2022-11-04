@@ -34,6 +34,126 @@ CServerRpc::CServerRpc ( CServer* pServer, CRpcServer* pRpcServer, QObject* pare
         Q_UNUSED ( params );
     } );
 
+#ifndef NO_FIREWALL
+    /// @rpc_method jamulusserver/addFirewallAddress
+    /// @brief Adds an address to the internal access control list.
+    /// @param {string} params.address - The address to add to the access control list.
+    /// @result {string} result - Always "ok".
+    pRpcServer->HandleMethod ( "jamulusserver/addFirewallAddress", [=] ( const QJsonObject& params, QJsonObject& response ) {
+        auto jsonAddress = params["address"];
+        if ( !jsonAddress.isString() )
+        {
+            response["error"] = CRpcServer::CreateJsonRpcError ( CRpcServer::iErrInvalidParams, "Invalid params: address is not a string" );
+            return;
+        }
+
+        pServer->GetSocketObject()->fwAdd ( QString ( jsonAddress.toString() ) );
+        response["result"] = "ok";
+    } );
+
+    /// @rpc_method jamulusserver/addFirewallAddresses
+    /// @brief Adds multiple address to the internal access control list.
+    /// @param {array} params.addresses - The addresses to add to the access control list.
+    /// @result {string} result - Always "ok".
+    pRpcServer->HandleMethod ( "jamulusserver/addFirewallAddresses", [=] ( const QJsonObject& params, QJsonObject& response ) {
+        auto jsonAddresses = params["addresses"];
+
+        if ( !jsonAddresses.isArray() )
+        {
+            response["error"] = CRpcServer::CreateJsonRpcError ( CRpcServer::iErrInvalidParams, "Invalid params: addresses must be an array" );
+            return;
+        }
+
+        for ( auto addr : jsonAddresses.toArray() )
+        {
+            if ( !addr.isString() )
+            {
+                response["error"] =
+                    CRpcServer::CreateJsonRpcError ( CRpcServer::iErrInvalidParams, "Invalid params: address within array is not a string" );
+                return;
+            }
+
+            pServer->GetSocketObject()->fwAdd ( QString ( addr.toString() ) );
+        }
+
+        response["result"] = "ok";
+    } );
+
+    /// @rpc_method jamulusserver/removeFirewallAddress
+    /// @brief Remove an address from the internal access control list.
+    /// @param {string} params.address - The address to remove from the access control list.
+    /// @result {string} result - Always "ok".
+    pRpcServer->HandleMethod ( "jamulusserver/removeFirewallAddress", [=] ( const QJsonObject& params, QJsonObject& response ) {
+        auto jsonAddress = params["address"];
+        if ( !jsonAddress.isString() )
+        {
+            response["error"] = CRpcServer::CreateJsonRpcError ( CRpcServer::iErrInvalidParams, "Invalid params: address is not a string" );
+            return;
+        }
+
+        pServer->GetSocketObject()->fwRemove ( QString ( jsonAddress.toString() ) );
+        response["result"] = "ok";
+    } );
+
+    /// @rpc_method jamulusserver/setFirewallMode
+    /// @brief Sets the access control mode (open or closed)
+    /// @param {int} params.mode - Sets the access control mode 0=Open, 1=Closed.
+    /// @result {string} result - Always "ok".
+    pRpcServer->HandleMethod ( "jamulusserver/setFirewallMode", [=] ( const QJsonObject& params, QJsonObject& response ) {
+        auto jsonMode = params["mode"];
+        if ( !jsonMode.isDouble() )
+        {
+            response["error"] = CRpcServer::CreateJsonRpcError ( CRpcServer::iErrInvalidParams, "Invalid params: mode must be numeric" );
+            return;
+        }
+
+        int mode = jsonMode.toInt();
+
+        if ( mode != 0 && mode != 1 )
+        {
+            response["error"] = CRpcServer::CreateJsonRpcError ( CRpcServer::iErrInvalidParams, "Invalid params: mode must be 0 or 1" );
+            return;
+        }
+
+        pServer->GetSocketObject()->fwSetMode ( mode );
+        response["result"] = "ok";
+    } );
+
+    /// @rpc_method jamulusserver/resetFirewall
+    /// @brief Reset the access control mode to OPEN and removes all addresses from control list.
+    /// @param {string} params - No parameters (empty object).
+    /// @result {string} result - Always "ok".
+    pRpcServer->HandleMethod ( "jamulusserver/resetFirewall", [=] ( const QJsonObject& params, QJsonObject& response ) {
+        pServer->GetSocketObject()->fwReset();
+        response["result"] = "ok";
+
+        Q_UNUSED ( params );
+    } );
+
+    /// @rpc_method jamulusserver/getFirewallStatus
+    /// @brief Returns the status of the firewall and control list.
+    /// @param {string} params - No parameters (empty object).
+    /// @result {int} result.mode - The current mode; 0=Open, 1=Closed.
+    /// @result {array} result.addresses - Addresses on the control list as an array.
+    pRpcServer->HandleMethod ( "jamulusserver/getFirewallStatus", [=] ( const QJsonObject& params, QJsonObject& response ) {
+        int mode = pServer->GetSocketObject()->fwGetMode();
+
+        QStringList ips;
+        pServer->GetSocketObject()->fwGetAddresses ( ips );
+
+        QJsonArray addresses = QJsonArray::fromStringList ( ips );
+
+        QJsonObject result{
+            { "mode", mode },
+            { "addresses", addresses },
+        };
+
+        response["result"] = result;
+
+        Q_UNUSED ( params );
+    } );
+
+#endif
     /// @rpc_method jamulusserver/getRecorderStatus
     /// @brief Returns the recorder state.
     /// @param {object} params - No parameters (empty object).
