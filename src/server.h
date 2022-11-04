@@ -169,6 +169,13 @@ public:
     void SetEnableDelayPanning ( bool bDelayPanningOn ) { bDelayPan = bDelayPanningOn; }
     bool IsDelayPanningEnabled() { return bDelayPan; }
 
+#ifndef NO_FIREWALL
+    // "Socket" here in the server is a high priority socket.  We want
+    // the underlying socket object so we have to get that from the
+    // high priority socket - see CHighPrioSocket in socket.h
+    CSocket* GetSocketObject() { return Socket.GetSocketObject(); };
+#endif
+
 protected:
     // access functions for actual channels
     bool IsConnected ( const int iChanNum ) { return vecChannels[iChanNum].IsConnected(); }

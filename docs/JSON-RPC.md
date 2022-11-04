@@ -219,6 +219,40 @@ Results:
 | result | string | Always "ok". |
 
 
+### jamulusserver/addFirewallAddress
+
+Adds an address to the internal access control list.
+
+Parameters:
+
+| Name | Type | Description |
+| --- | --- | --- |
+| params.address | string | The address to add to the access control list. |
+
+Results:
+
+| Name | Type | Description |
+| --- | --- | --- |
+| result | string | Always "ok". |
+
+
+### jamulusserver/addFirewallAddresses
+
+Adds multiple address to the internal access control list.
+
+Parameters:
+
+| Name | Type | Description |
+| --- | --- | --- |
+| params.addresses | array | The addresses to add to the access control list. |
+
+Results:
+
+| Name | Type | Description |
+| --- | --- | --- |
+| result | string | Always "ok". |
+
+
 ### jamulusserver/getClients
 
 Returns the list of connected clients along with details about them.
@@ -247,6 +281,24 @@ Results:
 | result.clients[*].countryName | number | The text name of the country specified by the user for this channel (see QLocale::Country). |
 | result.clients[*].skillLevelCode | number | The skill level id provided by the user for this channel. |
 | result.clients[*].skillLevelName | number | The skill level text name provided by the user for this channel. |
+
+
+### jamulusserver/getFirewallStatus
+
+Returns the status of the firewall and control list.
+
+Parameters:
+
+| Name | Type | Description |
+| --- | --- | --- |
+| params | string | No parameters (empty object). |
+
+Results:
+
+| Name | Type | Description |
+| --- | --- | --- |
+| result.mode | int | The current mode; 0=Open, 1=Closed. |
+| result.addresses | array | Addresses on the control list as an array. |
 
 
 ### jamulusserver/getRecorderStatus
@@ -291,6 +343,40 @@ Results:
 | result.registrationStatus | string | The server registration status as string (see ESvrRegStatus and SerializeRegistrationStatus). |
 
 
+### jamulusserver/removeFirewallAddress
+
+Remove an address from the internal access control list.
+
+Parameters:
+
+| Name | Type | Description |
+| --- | --- | --- |
+| params.address | string | The address to remove from the access control list. |
+
+Results:
+
+| Name | Type | Description |
+| --- | --- | --- |
+| result | string | Always "ok". |
+
+
+### jamulusserver/resetFirewall
+
+Reset the access control mode to OPEN and removes all addresses from control list.
+
+Parameters:
+
+| Name | Type | Description |
+| --- | --- | --- |
+| params | string | No parameters (empty object). |
+
+Results:
+
+| Name | Type | Description |
+| --- | --- | --- |
+| result | string | Always "ok". |
+
+
 ### jamulusserver/restartRecording
 
 Restarts the recording into a new directory.
@@ -306,6 +392,23 @@ Results:
 | Name | Type | Description |
 | --- | --- | --- |
 | result | string | Always "acknowledged".   To check if the recording was restarted or if there is any error, call `jamulusserver/getRecorderStatus` again. |
+
+
+### jamulusserver/setFirewallMode
+
+Sets the access control mode (open or closed)
+
+Parameters:
+
+| Name | Type | Description |
+| --- | --- | --- |
+| params.mode | int | Sets the access control mode 0=Open, 1=Closed. |
+
+Results:
+
+| Name | Type | Description |
+| --- | --- | --- |
+| result | string | Always "ok". |
 
 
 ### jamulusserver/setRecordingDirectory

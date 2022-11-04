@@ -27,6 +27,11 @@
 #include <QObject>
 #include <QThread>
 #include <QMutex>
+
+#ifdef FIREWALL
+#    include <QHash>
+#endif
+
 #include <vector>
 #include "global.h"
 #include "protocol.h"
@@ -63,6 +68,16 @@ public:
     bool GetAndResetbJitterBufferOKFlag();
     void Close();
 
+#ifndef NO_FIREWALL
+    void fwSetMode ( int mode );
+    int  fwGetMode();
+    void fwGetAddresses ( QStringList& ips );
+    void fwReset();
+    void fwAdd ( QString ip );
+    void fwRemove ( QString ip );
+    bool fwQuery ( CHostAddress RecAddr );
+#endif
+
 protected:
     void    Init ( const quint16 iPortNumber, const quint16 iQosNumber, const QString& strServerBindIP );
     quint16 iPortNumber;
@@ -90,6 +105,17 @@ protected:
     bool bJitterBufferOK;
 
     bool bEnableIPv6;
+
+#ifndef NO_FIREWALL
+    //
+    // Socket firewall implementation
+    //
+
+    QMutex                  FWMutex;         // Firewall changes mutex
+    int                     fwMode      = 0; // Firewall mode; 0=Open, 1=Closed
+    int                     fwRuleCount = 0; // Firewall rule count
+    QHash<QString, QString> fwList;
+#endif
 
 public:
     void OnDataReceived();
@@ -149,6 +175,10 @@ public:
     void SendPacket ( const CVector<uint8_t>& vecbySendBuf, const CHostAddress& HostAddr ) { Socket.SendPacket ( vecbySendBuf, HostAddr ); }
 
     bool GetAndResetbJitterBufferOKFlag() { return Socket.GetAndResetbJitterBufferOKFlag(); }
+
+#ifndef NO_FIREWALL
+    CSocket* GetSocketObject() { return &Socket; }
+#endif
 
 protected:
     class CSocketThread : public QThread
