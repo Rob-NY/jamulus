@@ -25,7 +25,7 @@
 
 #include "serverrpc.h"
 
-CServerRpc::CServerRpc ( CServer* pServer, CRpcServer* pRpcServer, QObject* parent ) : QObject ( parent )
+CServerRpc::CServerRpc ( CServer* pServer, CRpcServer* pRpcServer, QObject* parent ) : QObject ( parent ), ptrRpcServer ( pRpcServer )
 {
 
     /// @rpc_notification jamulusserver/chatReceived
@@ -104,7 +104,6 @@ CServerRpc::CServerRpc ( CServer* pServer, CRpcServer* pRpcServer, QObject* pare
     /// @result {number} result.countryName - The text name of the user's country (see QLocale::Country).
     /// @result {number} result.skillLevelCode - The user's skill level id.
     /// @result {number} result.skillLevelName - The user's skill level text name.
-
     QObject::connect ( &CRpcLogging::getInstance(), &CRpcLogging::rpcUpdateConnection, [=] ( CChannel& channel, const QString strOldName ) {
         CChannelCoreInfo chanInfo = channel.GetChanInfo();
 
@@ -126,6 +125,22 @@ CServerRpc::CServerRpc ( CServer* pServer, CRpcServer* pRpcServer, QObject* pare
                                                 { "skillLevelName", SkillLevelToString ( chanInfo.eSkillLevel ) },
                                             } );
     } );
+
+    /*
+     * Certain signals generated outside the gui thread cannot be set up using Lamdas because they are
+     * not queued up properly and generate runtime errors from QT.  In these cases, traditional slots
+     * are used where QT will put the signal on the main message loop.
+     */
+
+    /// @rpc_notification jamulusserver/recordingEnded
+    /// @brief Emitted when recording is stopped on a server
+    /// @result {string} result.session - The session name for the recording
+    QObject::connect ( &CRpcLogging::getInstance(), &CRpcLogging::rpcRecordingEnded, this, &CServerRpc::rpcRecordingEnded );
+
+    /// @rpc_notification jamulusserver/recordingStarted
+    /// @brief Emitted when recording is started on a server
+    /// @result {string} result.session - The session name for the recording
+    QObject::connect ( &CRpcLogging::getInstance(), &CRpcLogging::rpcRecordingStarted, this, &CServerRpc::rpcRecordingStarted );
 
     // API doc already part of CClientRpc
     pRpcServer->HandleMethod ( "jamulus/getMode", [=] ( const QJsonObject& params, QJsonObject& response ) {
@@ -158,7 +173,8 @@ CServerRpc::CServerRpc ( CServer* pServer, CRpcServer* pRpcServer, QObject* pare
     /// method.
     /// @param {string} params.address - The full channel IP address as a string XXX.XXX.XXX.XXX:PPPPP
     /// @param {string} params.textMessage - The chat message to be sent.
-    /// @result {string} result - "ok" if channel could be determined and message sent.
+    /// @result {string} result - "ok" if channel could be determined and message sent
+    /// @result {string} error - Contains the error if the chat could not be sent
     pRpcServer->HandleMethod ( "jamulusserver/sendChat", [=] ( const QJsonObject& params, QJsonObject& response ) {
         auto strAddress  = params["address"];
         auto chatMessage = params["textMessage"];
@@ -412,6 +428,30 @@ CServerRpc::CServerRpc ( CServer* pServer, CRpcServer* pRpcServer, QObject* pare
         Q_UNUSED ( params );
     } );
 }
+
+//
+// Public slots - used when "connect"'s cannot use lamdas because of thread issues. (see above)
+//
+
+void CServerRpc::rpcRecordingEnded ( const QString strSession )
+{
+    ptrRpcServer->BroadcastNotification ( "jamulusserver/recordingEnded",
+                                          QJsonObject{
+                                              { "session", strSession },
+                                          } );
+}
+
+void CServerRpc::rpcRecordingStarted ( const QString strSession )
+{
+    ptrRpcServer->BroadcastNotification ( "jamulusserver/recordingStarted",
+                                          QJsonObject{
+                                              { "session", strSession },
+                                          } );
+}
+
+//
+// Utility Methods
+//
 
 QJsonValue CServerRpc::SerializeRegistrationStatus ( ESvrRegStatus eSvrRegStatus )
 {

@@ -115,8 +115,12 @@ public:
 
     void rpcOnNewConnection ( CChannel& channel ) { emit rpcClientConnected ( channel ); }
     void rpcOnUpdateConnection ( CChannel& channel, const QString strOldName ) { emit rpcUpdateConnection ( channel, strOldName ); }
+    void rpcOnRecordingStarted ( const QString strSessionName ) { emit rpcRecordingStarted ( strSessionName ); }
+    void rpcOnRecordingEnded ( const QString strSessionName ) { emit rpcRecordingEnded ( strSessionName ); }
 
 signals:
     void rpcClientConnected ( CChannel& channel );
     void rpcUpdateConnection ( CChannel& channel, const QString strOldName );
+    void rpcRecordingStarted ( const QString strSessionName );
+    void rpcRecordingEnded ( const QString strSessionName );
 };

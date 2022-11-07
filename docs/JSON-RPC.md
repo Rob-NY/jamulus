@@ -555,3 +555,25 @@ Results:
 | result.skillLevelName | number | The user's skill level text name. |
 
 
+### jamulusserver/recordingEnded
+
+Emitted when recording is stopped on a server
+
+Results:
+
+| Name | Type | Description |
+| --- | --- | --- |
+| result.session | string | The session name for the recording |
+
+
+### jamulusserver/recordingStarted
+
+Emitted when recording is started on a server
+
+Results:
+
+| Name | Type | Description |
+| --- | --- | --- |
+| result.session | string | The session name for the recording |
+
+
