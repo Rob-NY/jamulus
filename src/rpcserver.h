@@ -25,6 +25,7 @@
 
 #pragma once
 
+#include <QCoreApplication>
 #include <QObject>
 #include <QJsonDocument>
 #include <QJsonArray>
@@ -41,15 +42,17 @@ typedef std::function<void ( const QJsonObject&, QJsonObject& )> CRpcHandler;
 /* Classes ********************************************************************/
 class CRpcServer : public QObject
 {
-    Q_OBJECT
+    Q_OBJECT 
 
 public:
-    CRpcServer ( QObject* parent, int iPort, QString secret );
+    CRpcServer ( QCoreApplication* parent, int iPort, QString secret );
     virtual ~CRpcServer();
 
     bool Start();
     void HandleMethod ( const QString& strMethod, CRpcHandler pHandler );
     void BroadcastNotification ( const QString& strMethod, const QJsonObject& aParams );
+    void exitApplication();
+
 
     static QJsonObject CreateJsonRpcError ( int code, QString message );
 
@@ -65,6 +68,7 @@ public:
     static const int iErrChannelNotFound      = 402;
 
 private:
+    QCoreApplication *Parent;
     int         iPort;
     QString     strSecret;
     QTcpServer* pTransportServer;

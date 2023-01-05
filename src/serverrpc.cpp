@@ -427,6 +427,19 @@ CServerRpc::CServerRpc ( CServer* pServer, CRpcServer* pRpcServer, QObject* pare
         response["result"] = "acknowledged";
         Q_UNUSED ( params );
     } );
+
+
+    /// @rpc_method jamulusserver/exitServer
+    /// @brief End the jamulus server application
+    /// @param {string} params - No parameters (empty object).
+    /// @result {string} result - Always "ok", may not be received.
+    pRpcServer->HandleMethod ( "jamulusserver/exitServer", [=] ( const QJsonObject& params, QJsonObject& response ) {
+
+        pRpcServer->exitApplication();
+
+        response["result"] = "ok";
+        Q_UNUSED( params );
+    } );    
 }
 
 //

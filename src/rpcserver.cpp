@@ -23,11 +23,12 @@
  *
  \******************************************************************************/
 
+
 #include "global.h"
 #include "rpcserver.h"
 
-CRpcServer::CRpcServer ( QObject* parent, int iPort, QString strSecret ) :
-    QObject ( parent ),
+CRpcServer::CRpcServer ( QCoreApplication* parent, int iPort, QString strSecret ) :
+    Parent ( parent ),
     iPort ( iPort ),
     strSecret ( strSecret ),
     pTransportServer ( new QTcpServer ( this ) )
@@ -53,6 +54,15 @@ CRpcServer::~CRpcServer()
         pTransportServer->close();
     }
 }
+
+void CRpcServer::exitApplication()
+{
+    // The parent of the RPC server is the QT application object.
+
+    Parent->exit();
+    
+}
+
 
 bool CRpcServer::Start()
 {
